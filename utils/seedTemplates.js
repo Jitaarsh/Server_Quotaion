@@ -51,8 +51,12 @@ const templates = [
 
 const seedTemplates = async () => {
   try {
-    const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/quickquote";
-    await mongoose.connect(mongoURI);
+    if (!process.env.MONGO_URI) {
+      console.error("MONGO_URI is not defined in .env");
+      process.exit(1);
+    }
+
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("Connected to MongoDB for seeding...");
 
     // Clear existing templates to avoid duplicates

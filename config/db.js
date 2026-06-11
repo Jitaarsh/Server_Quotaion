@@ -22,7 +22,7 @@ const connectDB = async () => {
     console.log(`✅ MongoDB Connected (Main DB: ${mongoose.connection.db.databaseName})`);
 
     // 2. Connect secondary mongoose connection to admin DB
-    const adminURI = process.env.ADMIN_MONGO_URI || "mongodb://127.0.0.1:27017/admin";
+    const adminURI = process.env.ADMIN_MONGO_URI || process.env.MONGO_URI;
     adminDb = mongoose.createConnection(adminURI);
 
     adminDb.on("connected", () => {
