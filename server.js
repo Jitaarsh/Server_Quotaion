@@ -63,6 +63,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
 ].filter(Boolean).map((origin) => origin.replace(/\/+$/, ""));
 
+const cors = require('cors');
 // Enable CORS for frontend requests - MUST BE BEFORE HELMET AND LIMITER
 app.use(
   cors({
