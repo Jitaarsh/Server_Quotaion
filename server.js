@@ -47,22 +47,31 @@ connectDB();
 // ── Initialize Express app ──────────────────────────────────
 const app = express();
 
-// import path from "path";
-// import { fileURLToPath } from "url";
-
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-
 // ── Global Middleware ────────────────────────────────────────
 
 // Enable CORS for frontend requests - MUST BE BEFORE HELMET AND LIMITER
+// Add every deployed frontend URL here, plus local dev ports.
+// CLIENT_URL (set in Render's Environment tab) lets you add/change the
+// production frontend URL without editing code again.
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "https://client-quotation-two.vercel.app",
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:5175",
-    ],
+    origin: function (origin, callback) {
+      // allow requests with no origin (curl, Postman, server-to-server)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`❌ CORS blocked request from origin: ${origin}`);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -165,8 +174,6 @@ app.use("/api/admin/tickets", adminTicketRoutes);
 
 // Chat & Real-time Communication routes
 app.use("/api/chat", chatRoutes);
-
-
 
 // ── Error Handling ──────────────────────────────────────────
 
