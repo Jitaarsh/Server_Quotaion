@@ -15,8 +15,12 @@ dotenv.config({ path: path.join(__dirname, "../.env") });
  */
 const seedAdmin = async () => {
   try {
-    const adminURI = process.env.ADMIN_MONGO_URI || "mongodb://127.0.0.1:27017/admin";
-    console.log(`Connecting to Admin DB: ${adminURI}`);
+    if (!process.env.ADMIN_MONGO_URI) {
+      console.error("❌ Error: ADMIN_MONGO_URI is not defined in .env file");
+      process.exit(1);
+    }
+    const adminURI = process.env.ADMIN_MONGO_URI;
+    console.log(`Connecting to Admin DB...`);
     await mongoose.connect(adminURI);
 
     const existingAdmin = await User.findOne({ role: "superadmin" });

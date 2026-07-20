@@ -22,8 +22,11 @@ const connectDB = async () => {
     console.log(`✅ MongoDB Connected (Main DB: ${mongoose.connection.db.databaseName})`);
 
     // 2. Connect secondary mongoose connection to admin DB
-    const adminURI = process.env.ADMIN_MONGO_URI || "mongodb://127.0.0.1:27017/admin";
-    adminDb = mongoose.createConnection(adminURI);
+    if (!process.env.ADMIN_MONGO_URI) {
+      console.error("❌ Error: ADMIN_MONGO_URI is not defined in .env file");
+      process.exit(1);
+    }
+    adminDb = mongoose.createConnection(process.env.ADMIN_MONGO_URI);
 
     adminDb.on("connected", () => {
       console.log(`✅ MongoDB Connected (Admin DB)`);

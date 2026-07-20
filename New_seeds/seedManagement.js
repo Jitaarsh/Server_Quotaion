@@ -29,9 +29,12 @@ const managementData = {
 
 const seedManagement = async () => {
   try {
-    const adminURI = process.env.ADMIN_MONGO_URI || "mongodb://127.0.0.1:27017";
-    console.log(`Connecting to Admin DB: ${adminURI}`);
-    await mongoose.connect(adminURI);
+    if (!process.env.ADMIN_MONGO_URI) {
+      console.error("❌ Error: ADMIN_MONGO_URI is not defined in .env file");
+      process.exit(1);
+    }
+    console.log(`Connecting to Admin DB...`);
+    await mongoose.connect(process.env.ADMIN_MONGO_URI);
     console.log("Connected to MongoDB (Admin DB)");
 
     const existingManagement = await User.findOne({
