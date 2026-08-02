@@ -19,25 +19,8 @@ export const bulkCreateProducts = async (req, res, next) => {
     }
 
     const files = req.files || [];
-
-    // Create a map of files by their base name (SKU)
-    // Map format: { [sku]: { image: path, pdf: path } }
-    const fileMap = {};
-    
-    files.forEach(file => {
-      const ext = path.extname(file.originalname).toLowerCase();
-      const baseName = path.basename(file.originalname, ext).trim(); // This should be the SKU
-      
-      if (!fileMap[baseName]) fileMap[baseName] = {};
-      
-      const normalizedPath = file.path.replace(/\\/g, "/");
-      
-      if (['.jpg', '.jpeg', '.png', '.webp'].includes(ext)) {
-        fileMap[baseName].image = normalizedPath;
-      } else if (ext === '.pdf') {
-        fileMap[baseName].pdf = normalizedPath;
-      }
-    });
+    const imageFiles = files.filter(file => file.mimetype?.startsWith('image/'));
+    const pdfFiles = files.filter(file => file.mimetype === 'application/pdf');
 
     const results = {
       created: 0,
@@ -68,16 +51,6 @@ export const bulkCreateProducts = async (req, res, next) => {
           continue;
         }
 
-        // Match files by SKU (ignoring case)
-        const skuKey = p.sku.trim();
-        // Look for case-insensitive match in fileMap
-        const matchedSku = Object.keys(fileMap).find(k => k.toLowerCase() === skuKey.toLowerCase());
-        
-        if (matchedSku) {
-          if (fileMap[matchedSku].image) p.productImage = fileMap[matchedSku].image;
-          if (fileMap[matchedSku].pdf) p.cataloguePdf = fileMap[matchedSku].pdf;
-        }
-
         // Ensure numbers are numbers
         p.basePrice = p.basePrice ? Number(p.basePrice) : 0;
         p.createdBy = req.user._id;
@@ -88,6 +61,31 @@ export const bulkCreateProducts = async (req, res, next) => {
         results.errors.push(`Error processing SKU "${p.sku}": ${err.message}`);
       }
     }
+
+    imageFiles.forEach((file) => {
+      const match = file.fieldname.match(/^productImage_(\d+)$/);
+      if (match) {
+        const idx = parseInt(match[1], 10);
+        if (finalProducts[idx]) {
+          finalProducts[idx].productImage = file.path.replace(/\\/g, "/");
+        }
+      }
+    });
+
+    pdfFiles.forEach((file) => {
+      const match = file.fieldname.match(/^cataloguePdf_(\d+)$/);
+      if (match) {
+        const idx = parseInt(match[1], 10);
+        if (finalProducts[idx]) {
+          finalProducts[idx].cataloguePdf = file.path.replace(/\\/g, "/");
+        }
+      }
+    });
+
+    finalProducts.forEach((p) => {
+      p.productImage = p.productImage || "";
+      p.cataloguePdf = p.cataloguePdf || "";
+    });
 
     if (finalProducts.length > 0) {
       const createdItems = await Product.insertMany(finalProducts);
