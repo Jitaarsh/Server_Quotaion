@@ -100,6 +100,8 @@ const quotationSchema = new mongoose.Schema(
       coverDescription: { type: String },
       coverFooterAddress: { type: String },
       coverFooterWebsite: { type: String },
+      customConfig: { type: mongoose.Schema.Types.Mixed, default: null },
+      themeColor: { type: String, default: null },
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

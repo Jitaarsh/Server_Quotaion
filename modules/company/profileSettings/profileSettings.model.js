@@ -83,6 +83,17 @@ const profileSettingsSchema = new mongoose.Schema(
       default: "#145be9",
       trim: true,
     },
+    // Default quotation template preference
+    defaultTemplateId: {
+      type: String,
+      default: 'simple',
+      trim: true,
+    },
+    // Full custom template config (pages[], themeColor) if defaultTemplateId === 'custom'
+    defaultCustomConfig: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
   },
   {
     timestamps: true, // Automatically track creation and updates

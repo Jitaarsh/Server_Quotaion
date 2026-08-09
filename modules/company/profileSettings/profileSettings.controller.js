@@ -44,6 +44,8 @@ export const upsertProfileSettings = async (req, res, next) => {
       primaryLogo,
       secondaryLogo,
       primaryColor,
+      defaultTemplateId,
+      defaultCustomConfig,
     } = req.body;
 
     // Log the payload to verify data types
@@ -58,6 +60,8 @@ export const upsertProfileSettings = async (req, res, next) => {
       primaryLogo,
       secondaryLogo,
       primaryColor,
+      defaultTemplateId,
+      defaultCustomConfig,
     });
 
     const settings = await ProfileSettings.findOneAndUpdate(
@@ -73,6 +77,8 @@ export const upsertProfileSettings = async (req, res, next) => {
         primaryLogo,
         secondaryLogo,
         primaryColor,
+        defaultTemplateId,
+        defaultCustomConfig,
       },
       {
         new: true,

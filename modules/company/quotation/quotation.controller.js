@@ -786,26 +786,10 @@ export const updateTemplateSettings = async (req, res) => {
     }
 
     quotation.templateSettings = {
-      templateId:  templateId  ?? quotation.templateSettings?.templateId  ?? "simple",
-      bgImage:     bgImage     ?? quotation.templateSettings?.bgImage     ?? null,
-      bgOpacity:   bgOpacity   ?? quotation.templateSettings?.bgOpacity   ?? 8,
-      bgBlur:      bgBlur      ?? quotation.templateSettings?.bgBlur      ?? 0,
-      bgFit:       bgFit       ?? quotation.templateSettings?.bgFit       ?? "cover",
-      bgTarget:    bgTarget    ?? quotation.templateSettings?.bgTarget    ?? "all",
-      wmImage:     wmImage     ?? quotation.templateSettings?.wmImage     ?? null,
-      wmOpacity:   wmOpacity   ?? quotation.templateSettings?.wmOpacity   ?? 15,
-      wmPosition:  wmPosition  ?? quotation.templateSettings?.wmPosition  ?? "center",
-      wmSize:      wmSize      ?? quotation.templateSettings?.wmSize      ?? 120,
-      wmTarget:    wmTarget    ?? quotation.templateSettings?.wmTarget    ?? "all",
-      
-      // Cover Details
-      coverHeader:           coverHeader           ?? quotation.templateSettings?.coverHeader           ?? "PROJECT PROPOSAL",
-      coverTitle:            coverTitle            ?? quotation.templateSettings?.coverTitle            ?? null,
-      coverDescriptionTitle: coverDescriptionTitle ?? quotation.templateSettings?.coverDescriptionTitle ?? null,
-      coverDescription:      coverDescription      ?? quotation.templateSettings?.coverDescription      ?? null,
-      coverFooterAddress:    coverFooterAddress    ?? quotation.templateSettings?.coverFooterAddress    ?? null,
-      coverFooterWebsite:    coverFooterWebsite    ?? quotation.templateSettings?.coverFooterWebsite    ?? null,
+      ...(quotation.templateSettings?.toObject ? quotation.templateSettings.toObject() : quotation.templateSettings),
+      ...req.body
     };
+    quotation.markModified('templateSettings');
 
     // If termsId is provided, snapshot the T&C content
     if (termsId) {
@@ -834,5 +818,31 @@ export const updateTemplateSettings = async (req, res) => {
       success: false,
       message: error.message || "Failed to save template settings",
     });
+  }
+};
+
+export const deleteQuotation = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const quotation = await Quotation.findOne({
+      _id: id,
+      createdBy: req.user._id,
+    });
+
+    if (!quotation) {
+      return res.status(404).json({
+        success: false,
+        message: "Quotation not found",
+      });
+    }
+
+    await Quotation.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: "Quotation deleted successfully",
+    });
+  } catch (error) {
+    next(error);
   }
 };

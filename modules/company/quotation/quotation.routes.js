@@ -9,6 +9,7 @@ import {
   shareQuotations,
   updateQuotation,
   updateTemplateSettings,
+  deleteQuotation,
 } from "./quotation.controller.js";
 import protect from "../../../middleware/auth.js";
 
@@ -36,6 +37,7 @@ router.post("/share", shareQuotations);
 router.get("/", getQuotations);
 router.get("/:id", getQuotationById);
 router.put("/:id", updateQuotation);
+router.delete("/:id", deleteQuotation);
 router.patch("/:id/template", updateTemplateSettings);
 
 export default router;
