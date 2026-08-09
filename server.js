@@ -47,6 +47,10 @@ connectDB();
 // ── Initialize Express app ──────────────────────────────────
 const app = express();
 
+// Render sits behind a single reverse proxy. This lets rate limiting use the
+// client address from X-Forwarded-For.
+app.set('trust proxy', 1);
+
 // ── Global Middleware ────────────────────────────────────────
 
 // Enable CORS for frontend requests - MUST BE BEFORE HELMET AND LIMITER
