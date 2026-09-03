@@ -10,18 +10,19 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, "../.env") });
 
 const adminData = {
-  companyName: "UniCrop Admin",
-  ownerName: "Super Admin",
+  companyName: "VISE Director",
+  ownerName: "VISE Director",
   gstNo: "27AAAAA0000A1Z5", // Dummy GST
-  address: "UniCrop HQ, Tech Park",
+  website: "",
+  address: "VISE Director Office",
   country: "India",
   state: "Maharashtra",
   city: "Mumbai",
   pincode: "400001",
-  description: "Main administrator account for UniCrop Quick Quote system.",
+  description: "Primary super administrator account for QuickQuote CRM.",
   phone: "9876543210",
-  email: "admin@unicrop.com",
-  password: "adminpassword123", // Will be hashed by User model pre-save hook
+  email: "visedirector@gmail.com",
+  password: "Vise@2026!8qL#rT2", // Will be hashed by User model pre-save hook
   role: "superadmin",
   subscription: "premium",
   isActive: true,
@@ -29,12 +30,12 @@ const adminData = {
 
 const seedAdmin = async () => {
   try {
-    if (!process.env.MONGO_URI) {
-      console.error("❌ Error: MONGO_URI is not defined in .env file");
+    if (!process.env.ADMIN_MONGO_URI) {
+      console.error("❌ Error: ADMIN_MONGO_URI is not defined in .env file");
       process.exit(1);
     }
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ Connected to MongoDB");
+    await mongoose.connect(process.env.ADMIN_MONGO_URI);
+    console.log("✅ Connected to MongoDB (Admin DB)");
 
     // Check if admin already exists
     const existingAdmin = await User.findOne({ email: adminData.email });

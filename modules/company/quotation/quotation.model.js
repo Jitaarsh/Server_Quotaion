@@ -31,6 +31,7 @@ const quotationSchema = new mongoose.Schema(
         price: { type: Number, required: true },
         discount: { type: Number, default: 0 },
         productImage: { type: String, default: null },
+        cataloguePdf: { type: String, default: "" },
         total: { type: Number, required: true },
       },
     ],

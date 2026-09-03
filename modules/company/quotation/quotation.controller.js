@@ -34,11 +34,25 @@ const escapeHtml = (value = "") =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
-const getClientBaseUrl = () =>
-  (process.env.CLIENT_URL || process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "");
+const stripTrailingSlash = (url) => String(url || "").trim().replace(/\/$/, "");
 
-const getApiBaseUrl = (req) =>
-  (process.env.API_URL || `${req.protocol}://${req.get("host")}/api`).replace(/\/$/, "");
+const getClientBaseUrl = () =>
+  stripTrailingSlash(process.env.CLIENT_URL || process.env.FRONTEND_URL || "http://localhost:5173");
+
+// Email recipients open these links outside the current browser session, so a
+// relative URL or a localhost fallback is not suitable in production. Set
+// PUBLIC_API_URL to the externally reachable backend URL (including `/api`).
+const getApiBaseUrl = (req) => {
+  const configuredUrl = process.env.PUBLIC_API_URL || process.env.API_URL;
+  if (configuredUrl) return stripTrailingSlash(configuredUrl);
+
+  const forwardedProtocol = req.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const forwardedHost = req.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const protocol = forwardedProtocol || req.protocol;
+  const host = forwardedHost || req.get("host");
+
+  return stripTrailingSlash(`${protocol}://${host}/api`);
+};
 
 const formatAmount = (amount = 0, currency = "INR") =>
   `${currency} ${Number(amount || 0).toLocaleString("en-IN", {
@@ -372,7 +386,8 @@ export const createQuotation = async (req, res) => {
       customer,
       items: items.map(item => ({
         ...item,
-        productImage: item.productImage || null
+        productImage: item.productImage || null,
+        cataloguePdf: item.cataloguePdf || ""
       })),
       subtotal,
       discountTotal,
@@ -451,7 +466,11 @@ export const getQuotationById = async (req, res) => {
     const quotation = await Quotation.findOne({ 
       _id: req.params.id, 
       createdBy: req.user._id
-    }).populate("customer");
+    })
+      .populate("customer")
+      // Supports catalog previews for quotations created before cataloguePdf
+      // began being stored as an item snapshot.
+      .populate("items.product", "cataloguePdf");
 
     if (!quotation) {
       return res.status(404).json({
@@ -732,6 +751,7 @@ export const updateQuotation = async (req, res) => {
     quotation.items = items.map(item => ({
       ...item,
       productImage: item.productImage || null,
+      cataloguePdf: item.cataloguePdf || "",
       description: item.description || ""
     }));
     quotation.subtotal = subtotal;

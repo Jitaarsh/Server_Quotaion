@@ -1,4 +1,5 @@
 import User, { getAdminUserModel } from "../models/User.js";
+import { OAuth2Client } from "google-auth-library";
 import Plan from "../modules/admin/pricing-Setup/plan.model.js";
 import generateToken from "../utils/generateToken.js";
 import sendEmail from "../Mail_sender/sendEmail.js";
@@ -559,6 +560,65 @@ export const resetPassword = async (req, res, next) => {
       success: true,
       message: "Password reset successfully. You can now login with your new password.",
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Sign in an existing account with a verified Google ID token
+ * @route   POST /api/auth/google
+ * @access  Public
+ */
+export const googleLogin = async (req, res, next) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({ success: false, message: "Google credential is required" });
+    }
+
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      return res.status(500).json({ success: false, message: "Google login is not configured" });
+    }
+
+    const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const { email, name, picture } = ticket.getPayload() || {};
+
+    if (!email) {
+      return res.status(401).json({
+        success: false,
+        message: "Unable to verify a Google email for this account.",
+      });
+    }
+
+    // These verified claims are available for future profile synchronization.
+    void name;
+    void picture;
+
+    // Check the admin database first, matching the password-login lookup order.
+    const AdminUser = getAdminUserModel();
+    let user = await AdminUser.findOne({ email });
+
+    if (!user || !["superadmin", "admin", "management"].includes(user.role)) {
+      user = await User.findOne({ email });
+    }
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "No account found with this Google email. Please register first or use email/password login.",
+      });
+    }
+
+    const token = generateToken(user._id);
+    const responseData = await buildUserResponse(user);
+
+    res.status(200).json({ success: true, data: responseData, token });
   } catch (error) {
     next(error);
   }

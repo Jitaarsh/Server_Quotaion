@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser, loginUser, getMe, updateProfile, changePassword, sendOtp, verifyOtp, resetPassword } from "../controllers/authController.js";
+import { registerUser, loginUser, googleLogin, getMe, updateProfile, changePassword, sendOtp, verifyOtp, resetPassword } from "../controllers/authController.js";
 import protect from "../middleware/auth.js";
 import {
   registerValidation,
@@ -27,6 +27,8 @@ router.post("/register", registerValidation, handleValidationErrors, registerUse
 
 // Public: Login with validation
 router.post("/login", loginValidation, handleValidationErrors, loginUser);
+
+router.post("/google", googleLogin);
 
 // Protected: Get current user
 router.get("/me", protect, getMe);
