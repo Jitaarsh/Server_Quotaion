@@ -64,12 +64,12 @@ const productSchema = new mongoose.Schema(
       default: "INR",
     },
     productImage: {
-      type: String,
-      default: "",
+      data: { type: String, default: "" },
+      contentType: { type: String, default: "" },
     },
     cataloguePdf: {
-      type: String,
-      default: "",
+      data: { type: String, default: "" },
+      contentType: { type: String, default: "application/pdf" },
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

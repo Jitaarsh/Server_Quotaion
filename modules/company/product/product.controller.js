@@ -1,7 +1,4 @@
 import Product from "./product.model.js";
-import { deleteFile } from "../../../middleware/product-upload.js";
-import path from "path";
-import fs from "fs";
 
 /**
  * @desc    Bulk create products with smart image/pdf matching by SKU
@@ -67,7 +64,10 @@ export const bulkCreateProducts = async (req, res, next) => {
       if (match) {
         const idx = parseInt(match[1], 10);
         if (finalProducts[idx]) {
-          finalProducts[idx].productImage = file.path.replace(/\\/g, "/");
+          finalProducts[idx].productImage = {
+            data: file.buffer.toString("base64"),
+            contentType: file.mimetype,
+          };
         }
       }
     });
@@ -77,14 +77,17 @@ export const bulkCreateProducts = async (req, res, next) => {
       if (match) {
         const idx = parseInt(match[1], 10);
         if (finalProducts[idx]) {
-          finalProducts[idx].cataloguePdf = file.path.replace(/\\/g, "/");
+          finalProducts[idx].cataloguePdf = {
+            data: file.buffer.toString("base64"),
+            contentType: "application/pdf",
+          };
         }
       }
     });
 
     finalProducts.forEach((p) => {
-      p.productImage = p.productImage || "";
-      p.cataloguePdf = p.cataloguePdf || "";
+      p.productImage = p.productImage || { data: "", contentType: "" };
+      p.cataloguePdf = p.cataloguePdf || { data: "", contentType: "" };
     });
 
     if (finalProducts.length > 0) {
@@ -151,15 +154,21 @@ export const createProduct = async (req, res, next) => {
     }
 
     // Handle File Uploads
-    let productImage = "";
-    let cataloguePdf = "";
+    let productImage = { data: "", contentType: "" };
+    let cataloguePdf = { data: "", contentType: "" };
 
     if (req.files) {
       if (req.files.productImage) {
-        productImage = req.files.productImage[0].path.replace(/\\/g, "/");
+        productImage = {
+          data: req.files.productImage[0].buffer.toString("base64"),
+          contentType: req.files.productImage[0].mimetype,
+        };
       }
       if (req.files.cataloguePdf) {
-        cataloguePdf = req.files.cataloguePdf[0].path.replace(/\\/g, "/");
+        cataloguePdf = {
+          data: req.files.cataloguePdf[0].buffer.toString("base64"),
+          contentType: "application/pdf",
+        };
       }
     }
 
@@ -281,23 +290,25 @@ export const updateProduct = async (req, res, next) => {
     // Handle File Updates
     if (req.files) {
       if (req.files.productImage) {
-        if (product.productImage) deleteFile(product.productImage);
-        updateData.productImage = req.files.productImage[0].path.replace(/\\/g, "/");
+        updateData.productImage = {
+          data: req.files.productImage[0].buffer.toString("base64"),
+          contentType: req.files.productImage[0].mimetype,
+        };
       }
       if (req.files.cataloguePdf) {
-        if (product.cataloguePdf) deleteFile(product.cataloguePdf);
-        updateData.cataloguePdf = req.files.cataloguePdf[0].path.replace(/\\/g, "/");
+        updateData.cataloguePdf = {
+          data: req.files.cataloguePdf[0].buffer.toString("base64"),
+          contentType: "application/pdf",
+        };
       }
     }
 
     // Handle explicit file removal from frontend
     if (req.body.productImage === "") {
-        if (product.productImage) deleteFile(product.productImage);
-        updateData.productImage = "";
+        updateData.productImage = { data: "", contentType: "" };
     }
     if (req.body.cataloguePdf === "") {
-        if (product.cataloguePdf) deleteFile(product.cataloguePdf);
-        updateData.cataloguePdf = "";
+        updateData.cataloguePdf = { data: "", contentType: "" };
     }
 
     // Parse pricing tiers if sent as string (from FormData)
@@ -350,10 +361,6 @@ export const deleteProduct = async (req, res, next) => {
         message: "Product not found",
       });
     }
-
-    // Delete associated files
-    if (product.productImage) deleteFile(product.productImage);
-    if (product.cataloguePdf) deleteFile(product.cataloguePdf);
 
     await Product.findByIdAndDelete(req.params.id);
 
