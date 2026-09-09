@@ -118,19 +118,19 @@ const buildQuotationEmailHtml = ({ quotation, downloadUrl, acceptUrl, rejectUrl,
                   <div class="section-title">Download Your Quotation</div>
                   <p>Click the button below to download your quotation as a PDF:</p>
                   <div style="text-align: center;">
-                    <a href="${escapeHtml(downloadUrl)}" class="download-button">Download PDF</a>
+                    <a href="${downloadUrl}" class="download-button">Download PDF</a>
                   </div>
                   <div class="section-title">Your Decision</div>
                   <p>Please accept or reject this quotation using the buttons below. Your response will be shared with ${escapeHtml(companyName)}.</p>
                   <div style="text-align: center;">
-                    <a href="${escapeHtml(acceptUrl)}" class="response-button accept-button">Accept Quotation</a>
-                    <a href="${escapeHtml(rejectUrl)}" class="response-button reject-button">Reject Quotation</a>
+                    <a href="${acceptUrl}" class="response-button accept-button">Accept Quotation</a>
+                    <a href="${rejectUrl}" class="response-button reject-button">Reject Quotation</a>
                   </div>
                   <p style="font-size: 13px; color: #666; margin-top: 20px;">
                     <em>If the button above doesn't work, you can also copy and paste this link in your browser:</em>
                   </p>
                   <p style="font-size: 12px; color: #0066cc; word-break: break-all; background-color: #f0f0f0; padding: 10px; border-radius: 4px;">
-                    ${escapeHtml(downloadUrl)}
+                    ${downloadUrl}
                   </p>
                   <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
                   <p><strong>Questions?</strong></p>
@@ -658,7 +658,7 @@ export const shareQuotations = async (req, res) => {
       }
 
       const encodedEmail = encodeURIComponent(to);
-      const downloadUrl = `${apiBaseUrl}/company/quotation/${quotation._id}/download?email=${encodedEmail}`;
+      const downloadUrl = `${getClientBaseUrl()}/shared-quotation/${quotation._id}?email=${encodedEmail}&download=1`;
       const acceptUrl = `${apiBaseUrl}/company/quotation/${quotation._id}/respond/accept?email=${encodedEmail}`;
       const rejectUrl = `${apiBaseUrl}/company/quotation/${quotation._id}/respond/reject?email=${encodedEmail}`;
       const html = buildQuotationEmailHtml({ quotation, downloadUrl, acceptUrl, rejectUrl, companyName });

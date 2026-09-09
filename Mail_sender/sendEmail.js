@@ -7,6 +7,8 @@ const sendEmail = async ({ to, subject, html, attachments = [] }) => {
   const pass = process.env.SMTP_PASSWORD;
   const from = process.env.SMTP_FROM || user;
 
+  console.log("SMTP CONFIG:", { host, port, user, from });
+
   try {
     const transporter = nodemailer.createTransport({
       host,
