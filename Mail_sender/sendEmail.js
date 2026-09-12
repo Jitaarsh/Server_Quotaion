@@ -12,14 +12,14 @@ const sendEmail = async ({ to, subject, html, attachments = [] }) => {
   try {
     const transporter = nodemailer.createTransport({
       host,
-      port,
-      secure: port === 465, // true for 465, false for 587/2525
+      port: 587,
+      secure: false,
       auth: {
         user,
         pass,
       },
-      tls:{
-        rejectUnauthorized:false,
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
