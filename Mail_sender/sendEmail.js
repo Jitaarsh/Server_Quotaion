@@ -1,25 +1,17 @@
 import nodemailer from "nodemailer";
 
 const sendEmail = async ({ to, subject, html, attachments = [] }) => {
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASSWORD;
-  const from = process.env.SMTP_FROM || user;
-
-  console.log("SMTP CONFIG:", { host, port, user, from });
+  const from = "onboarding@resend.dev";
 
   try {
     const transporter = nodemailer.createTransport({
-      host,
-      port: 587,
+      host: "smtp.resend.com",
+      port: 465,
       secure: false,
+      tls: { rejectUnauthorized: false },
       auth: {
-        user,
-        pass,
-      },
-      tls: {
-        rejectUnauthorized: false,
+        user: "resend",
+        pass: process.env.RESEND_API_KEY,
       },
     });
 
