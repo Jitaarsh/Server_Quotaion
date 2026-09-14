@@ -6,7 +6,7 @@ const sendEmail = async ({ to, subject, html, attachments = [] }) => {
   try {
     const transporter = nodemailer.createTransport({
       host: "smtp.resend.com",
-      port: 465,
+      port: 587,
       secure: false,
       tls: { rejectUnauthorized: false },
       auth: {
